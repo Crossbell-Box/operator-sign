@@ -1,43 +1,47 @@
-## Development
+# Crossbell Operator Sign Backend Service
 
-Install deps:
+**Operator Sign (Op Sign)** designed to enhance the user experience on the Crossbell network. Its primary goal is to streamline the interaction process by minimizing the number of manual approvals required for each transaction.
+
+## Features
+
+- **Efficient Interactions**: No need to manually approve every transaction, ensuring a smoother user experience.
+- **Secure Authentication**: Leverage the SIWE protocol to authenticate users based on their encrypted signature.
+- **Delegated Operations**: The Operator contract methods can carry out operations on the user's behalf, ensuring both convenience and security.
+
+## Getting Started
+
+#### Install deps:
 
 ```bash
-npm i
+npm install
 ```
 
-### Database
+#### Prepare environment variables:
 
-Start DB docker:
+```bash
+copy .env.example .env
+```
+
+#### Setup wallet:
+
+You will need to create a wallet and obtain the private key and address, then fill in the environment variables: `OP_SIGN_OPERATOR_WALLET_ADDRESS` and `OP_SIGN_OPERATOR_WALLET_PRIVATE_KEY`.
+
+#### Start Database instance:
 
 ```bash
 npm run docker:db
 ```
 
-Migrate database and generate types in development environment:
+#### Migrate database and generate types in development environment:
 
 ```bash
 npm run prisma:migrate:dev
 ```
 
-Generate Prisma types only:
-
-```bash
-npm run prisma:generate
-```
-
-### Start server
-
-Start server:
+#### Start server:
 
 ```bash
 npm run start:dev
-```
-
-Start server without running crossbell event listeners:
-
-```bash
-DISABLE_CHAIN_EVENT_LISTENER=true npm run start:dev
 ```
 
 ## Deployment
@@ -61,10 +65,10 @@ In Node.js Environment:
 ```
 npm install
 npm run build
-./start_prod.sh
+NODE_ENV=production node dist/main
 ```
 
-## Migrate database
+### Migrate database
 
 In development:
 
@@ -77,3 +81,7 @@ In production:
 ```bash
 npm run prisma:migrate:deploy
 ```
+
+## Feedback & Contributions
+
+We welcome feedback and contributions from the community. Feel free to raise issues, submit pull requests, or share your insights to enhance the Operator Sign feature.
