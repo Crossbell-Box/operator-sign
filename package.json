@@ -1,8 +1,6 @@
 {
-  "name": "indexer-v1",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "crossbell-operator-sign",
+  "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
