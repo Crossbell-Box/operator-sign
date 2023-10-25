@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>SIWE Demo</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <style type="text/tailwindcss">
+      button {
+        @apply bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded;
+      }
+      pre {
+        max-height: 28rem;
+        overflow: auto;
+        overflow-wrap: break-word;
+        white-space: pre-wrap;
+        line-height: 1.5 !important;
+        @apply text-sm !important;
+      }
+      code {
+        counter-reset: step;
+        counter-increment: step 0;
+      }
+
+      code .line::before {
+        content: counter(step);
+        counter-increment: step;
+        width: 1rem;
+        margin-right: 1.5rem;
+        display: inline-block;
+        text-align: right;
+        color: rgba(115, 138, 148, 0.4);
+      }
+    </style>
+  </head>
+
+  <body class="bg-indigo-lightest font-mono">
+    <div
+      id="root"
+      class="container grid mx-auto p-8 prose prose-sm sm:prose lg:prose-md xl:prose-lg"
+    >
+      <div id="target">Loading</div>
+    </div>
+
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/shiki"></script>
+
+    <script type="text/babel" data-type="module" id="main-script">
+      /** @jsx h */
+      import { h, render } from 'https://esm.sh/preact@10';
+      import { useState } from 'https://esm.sh/preact@10/hooks';
+      import { ethers } from 'https://esm.sh/ethers@5';
+
+      console.log('all deps imported');
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const BACKEND_ADDR = '/v1/siwe';
+
+      function UpdateInfo() {
+        return (
+          <div>
+            <p>Last updated: 2023-01-16</p>
+          </div>
+        );
+      }
+
+      function Demo() {
+        async function getChallenge({ address, domain, uri, statement }) {
+          const { message } = await fetch(`${BACKEND_ADDR}/challenge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address, domain, uri, statement }),
+          }).then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              throw new Error('failed to get challenge');
+            }
+          });
+
+          console.log('got challenge message from api', message);
+
+          return message;
+        }
+
+        async function login(address, signature) {
+          const { token } = await fetch(`${BACKEND_ADDR}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address, signature }),
+          }).then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              throw new Error('failed to get challenge');
+            }
+          });
+
+          console.log('login response', { token });
+
+          localStorage.setItem('siwe:token', token);
+
+          return token;
+        }
+
+        async function getAccount() {
+          const token = localStorage.getItem('siwe:token');
+          const res = await fetch(`${BACKEND_ADDR}/account`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((res) => {
+            if (res.ok) {
+              return res.json();
+            } else {
+              throw new Error('failed to get challenge');
+            }
+          });
+
+          return res;
+        }
+
+        const [connectStatus, setConnectStatus] = useState('Connect wallet');
+        function connectWallet() {
+          console.log('requesting account access...');
+          setConnectStatus('⏳ Please approve in your wallet...');
+          provider
+            .send('eth_requestAccounts', [])
+            .then(() => {
+              console.log('user approved request');
+              setConnectStatus('✅ Connected');
+            })
+            .catch(() => {
+              console.log('user rejected request');
+            });
+        }
+
+        const [signInStatus, setSignInStatus] = useState(
+          'Sign-in with Crossbell (or Ethereum)',
+        );
+        async function signInWithCrossbell() {
+          console.log(
+            'requesting signature; please approve the request in your wallet...',
+          );
+
+          setSignInStatus('⏳ Please approve in your wallet...');
+          const message = await getChallenge({
+            address: await signer.getAddress(),
+            domain: 'crossbell.io',
+            uri: 'https://crossbell.io',
+            statement: 'Sign in with Crossbell to the app.',
+          }).catch((err) => {
+            console.log('error', err);
+            setSignInStatus('❌ Failed to sign in. Click to try again.');
+            throw err;
+          });
+
+          const signature = await signer
+            .signMessage(message)
+            .then((res) => {
+              console.log('signature', res);
+              setSignInStatus('✅ Signed');
+              return res;
+            })
+            .catch((err) => {
+              console.log('error', err);
+              setSignInStatus('❌ Failed to sign in. Click to try again.');
+              throw err;
+            });
+
+          setSignInStatus('Login...');
+          const token = await login(await signer.getAddress(), signature);
+
+          console.log('logged in', { token });
+
+          setSignInStatus('✅ Signed in');
+        }
+
+        const [getInfoStatus, setGetInfoStatus] = useState('Get account info');
+        async function getInformation() {
+          setGetInfoStatus('Getting session info...');
+
+          const res = await getAccount();
+
+          console.log('get information response', res);
+
+          setGetInfoStatus(`✅ Got session info: ${res.address}`);
+        }
+
+        const [signOutStatus, setSignOutStatus] = useState('Sign out');
+        async function signOut() {
+          setSignOutStatus('Signing out...');
+
+          localStorage.removeItem('siwe:token');
+
+          setSignOutStatus('✅ Signed out');
+          setConnectStatus('Connect wallet');
+          setSignInStatus('Sign-in with Crossbell (or Ethereum)');
+          setGetInfoStatus('Get account info');
+          setSignOutStatus('Sign out');
+        }
+
+        return (
+          <div>
+            <h2>Demo</h2>
+            <p>This is a demo of Crossbell Operator Sign.</p>
+            <p>
+              Follow the steps below to sign in with your Ethereum wallet. You
+              can use <a href="https://metamask.io">MetaMask</a> or any other
+              wallet that supports the{' '}
+              <a href="https://eips.ethereum.org/EIPS/eip-1193">EIP-1193</a>{' '}
+              standard.
+            </p>
+            <p>
+              While using the demo, you can check the network requests in the
+              browser console.
+            </p>
+
+            <p>
+              Step 1: <button onClick={connectWallet}>{connectStatus}</button>
+            </p>
+            <p>
+              Step 2:{' '}
+              <button onClick={signInWithCrossbell}>{signInStatus}</button>
+            </p>
+            <p>
+              Step 3: <button onClick={getInformation}>{getInfoStatus}</button>
+            </p>
+            <p>
+              Step 4:{' '}
+              <button
+                onClick={signOut}
+                disabled={!localStorage.getItem('siwe:token')}
+              >
+                {signOutStatus}
+              </button>
+            </p>
+          </div>
+        );
+      }
+
+      function Doc() {
+        return (
+          <div>
+            <h2>What is Op Sign</h2>
+            <p>
+              Operator Sign (Op Sign) is a feature that allows users to interact
+              on the Crossbell network without having to approve each
+              transaction in their wallet.
+            </p>
+
+            <h2>How</h2>
+            <p>
+              Op Sign uses the <a href="https://login.xyz">SIWE</a> protocol to
+              authenticate users by their encrypted signature, and the Operator
+              contract methods to perform operations on behalf of users.
+            </p>
+
+            <h2>Detailed Guide for (Frontend) Apps</h2>
+            <p>
+              API docs here:{' '}
+              <a href="https://indexer.crossbell.io/docs#/Siwe">
+                https://indexer.crossbell.io/docs#/Siwe
+              </a>
+            </p>
+            <p>To access Op Sign, follow these steps:</p>
+
+            <h3>1. Connect Your Wallet</h3>
+            <p>Connect your wallet on your app’s website.</p>
+
+            <h3>2. Request a Challenge Message</h3>
+            <p>
+              We need to request a challenge message from the Crossbell Indexer
+              using this API:
+            </p>
+            <div class="language-typescript">
+              {`async function getChallenge({ address, domain, uri, statement }) {
+const { message } = await fetch('https://indexer.crossbell.io/v1/siew/challenge', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ address, domain, uri, statement }),
+}).then((res) => {
+  if (res.ok) {
+    return res.json();
+  } else {
+    throw new Error('failed to get challenge');
+  }
+});
+
+return message;
+}`}
+            </div>
+
+            <h3>3. Sign the Message In Your Wallet</h3>
+            <p>
+              After you get the SIWE message, you should sign it in your wallet.
+              Here’s an example of signing a message in MetaMask (or any other):
+            </p>
+            <div class="language-typescript">
+              {`import { ethers } from 'ethers';
+
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner(); // or useSigner() hook if you're using wagmi
+
+async function signMessage() {
+  const message = await getChallenge({
+    address: await signer.getAddress(),
+    domain: 'crossbell.io',
+    uri: 'https://crossbell.io',
+    statement: 'Sign in with Crossbell to the app.',
+  });
+
+  console.log('requesting signature; please approve the request in your wallet...');
+  const signature = await signer.signMessage(message);
+
+  return signature;
+}`}
+            </div>
+
+            <h3>4. Login</h3>
+            <p>
+              Now, you can login with the signature you got from the wallet.
+            </p>
+            <div class="language-typescript">
+              {`async function signInWithCrossbell() {
+  const signature = await signMessage();
+
+  // login in
+  const { token } = await fetch('https://indexer.crossbell.io/v1/siwe/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address: await signer.getAddress(), signature }),
+  }).then((res) => {
+    if (res.ok) {
+      return res.json();
+    } else {
+      throw new Error('failed to get challenge');
+    }
+  });
+
+  // set the token to local storage
+  localStorage.setItem('siwe:token', token);
+
+  return token;
+}`}
+            </div>
+
+            <h3>5. DONE - Get the Account Information</h3>
+            <p>
+              We've already completed the authorization steps. Let's try to get
+              the account information using the token we got from the login.
+            </p>
+            <div class="language-typescript">
+              {`async function getAddress() {
+  const token = localStorage.getItem('siwe:token');
+  const res = await fetch('https://indexer.crossbell.io/v1/siwe/account', {
+    headers: { Authorization: \`Bearer \${token}\` },
+  }).then((res) => res.json());
+
+  return res.address;
+}`}
+            </div>
+            <p>You will receive your 0x address (in lowercase).</p>
+
+            <h3>6. Authorize the Op Signer as Operator</h3>
+            <p>
+              Now, when you try to perform operations via other (write) APIs,
+              you will probably get this error message:
+            </p>
+            <div class="language-json">
+              {`{
+  "ok": false,
+  "message": "You have not authorized the op signer (address: 0xbbc2918c9003d264c25ecae45b44a846702c0e7c) as an operator for this character (id: 10)"
+}`}
+            </div>
+            <p>
+              This means that you need to authorize the Op Signer as an Operator
+              for the character (id: 10 in this example) you are trying to
+              interact with.
+            </p>
+            <p>
+              To do this, you need to call the{' '}
+              <code>contract.grantOperatorPermissionsForCharacter</code> method
+              on the Operator contract using library like{' '}
+              <a href="https://npm.im/crossbell.js">crossbell.js</a>:
+            </p>
+            <div class="language-typescript">
+              {`const permissions = [
+  CharacterOperatorPermission.SET_CHARACTER_URI,
+  CharacterOperatorPermission.SET_LINKLIST_URI,
+  CharacterOperatorPermission.LINK_CHARACTER,
+  // ...
+]
+await contract.grantOperatorPermissionsForCharacter(
+  10,
+  '0xbbc2918c9003d264c25ecae45b44a846702c0e7c',
+  permissions
+);`}
+            </div>
+            <p>
+              This is a one-time operation. Once you have done this, you will be
+              able to interact with this character.
+            </p>
+
+            <h3>7. Transfer Enough Gas Fee to the Op Signer</h3>
+            <p>
+              Now, when you try to perform operations via other (write) APIs,
+              you will probably get this error message:
+            </p>
+            <div class="language-json">
+              {`{
+  "ok": false,
+  "message": "You do not have enough $CSB to perform this action"
+}`}
+            </div>
+            <p>
+              This means that you need to transfer enough $CSB to the Op Signer
+              to cover the transaction fee.
+            </p>
+            <p>
+              To do this, you can use the <code>contract.transfer</code> method
+              on the Crossbell contract. For example:
+            </p>
+            <div class="language-typescript">
+              {`import { utils } from 'ethers';
+
+await contract.transferCsb(
+  '0xbbc2918c9003d264c25ecae45b44a846702c0e7c',
+  utils.parseEthers('0.02'), // in wei
+);`}
+            </div>
+            <p>
+              This will transfer 0.02 $CSB (recommended) to the Op Signer. After
+              this, the Op Signer will have enough funds to pay for the
+              transaction fees.
+            </p>
+          </div>
+        );
+      }
+
+      function App() {
+        return (
+          <div>
+            <h1>SIWE for Crossbell</h1>
+            <UpdateInfo />
+            <hr />
+            <Demo />
+            <hr />
+            <Doc />
+          </div>
+        );
+      }
+
+      render(
+        <App />,
+        document.getElementById('root'),
+        document.getElementById('target'),
+      );
+
+      const highlight = async () => {
+        const tss = document.getElementsByClassName('language-typescript');
+        const jsons = document.getElementsByClassName('language-json');
+        const highlighter = await shiki.getHighlighter({
+          theme: 'nord',
+          langs: ['typescript', 'json'],
+        });
+        [...tss].forEach((ts) => {
+          const html = highlighter.codeToHtml(ts.textContent, 'typescript');
+          ts.outerHTML = html;
+        });
+        [...jsons].forEach((json) => {
+          const html = highlighter.codeToHtml(json.textContent, 'json');
+          json.outerHTML = html;
+        });
+      };
+      highlight();
+    </script>
+  </body>
+</html>
