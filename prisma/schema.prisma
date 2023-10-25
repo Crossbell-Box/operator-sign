@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions", "referentialIntegrity", "fullTextSearch", "metrics", "tracing", "orderByNulls"]
+}
+
+generator nestjsDto {
+  provider                      = "prisma-generator-nestjs-dto"
+  output                        = "../src/module/http/generated"
+  // outputToNestJsResourceStructure = "true"
+  exportRelationModifierClasses = "false"
+  reExport                      = "true"
+  createDtoPrefix               = "Create"
+  updateDtoPrefix               = "Update"
+  dtoSuffix                     = "Dto"
+  entityPrefix                  = ""
+  entitySuffix                  = "Entity"
+  fileNamingStyle               = "camel"
+  // enumAsSchema                  = "true"
+}
+
+datasource db {
+  provider             = "postgresql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+/// used to mark current crawling point
+model EventPoint {
+  eventName       String  @id @unique @map("event_name")
+  blockNumber     Int     @map("block_number")
+  transactionHash String? @map("transaction_hash")
+
+  @@index([eventName])
+  @@map("event_point")
+}
+
+/// Op Sign
+model OpSignUser {
+  address      String @unique @map("address")
+  csbSpent     String @default("0") @map("csb_spent")
+  csbRecharged String @default("0") @map("csb_recharged")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  @@id([address])
+  @@index([csbSpent])
+  @@index([csbRecharged])
+  @@index([createdAt(sort: Desc)])
+  @@index([updatedAt(sort: Desc)])
+  @@map("op_sign_user")
+}
+
+/// Character Operator
+enum CharacterOperatorPermission {
+  SET_HANDLE
+  SET_SOCIAL_TOKEN
+  GRANT_OPERATOR_PERMISSIONS
+  GRANT_OPERATORS_FOR_NOTE
+  SET_CHARACTER_URI
+  SET_LINKLIST_URI
+  LINK_CHARACTER
+  UNLINK_CHARACTER
+  CREATE_THEN_LINK_CHARACTER
+  LINK_NOTE
+  UNLINK_NOTE
+  LINK_ERC721
+  UNLINK_ERC721
+  LINK_ADDRESS
+  UNLINK_ADDRESS
+  LINK_ANY_URI
+  UNLINK_ANY_URI
+  LINK_LINKLIST
+  UNLINK_LINKLIST
+  SET_LINK_MODULE_FOR_CHARACTER
+  SET_LINK_MODULE_FOR_NOTE
+  SET_LINK_MODULE_FOR_LINKLIST
+  SET_MINT_MODULE_FOR_NOTE
+  SET_NOTE_URI
+  LOCK_NOTE
+  DELETE_NOTE
+  POST_NOTE_FOR_CHARACTER
+  POST_NOTE_FOR_ADDRESS
+  POST_NOTE_FOR_LINKLIST
+  POST_NOTE_FOR_NOTE
+  POST_NOTE_FOR_ERC721
+  POST_NOTE_FOR_ANY_URI
+  POST_NOTE
+}
+
+model CharacterOperator {
+  characterId Int @map("character_id")
+  // character   Character @relation(name: "Operator_Character", fields: [characterId], references: [characterId])
+
+  operator String @map("operator")
+
+  permissions CharacterOperatorPermission[] @map("permissions")
+
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+
+  transactionHash        String @map("transaction_hash")
+  blockNumber            Int    @map("block_number")
+  logIndex               Int    @map("log_index")
+  updatedTransactionHash String @map("updated_transaction_hash")
+  updatedBlockNumber     Int    @map("updated_block_number")
+  updatedLogIndex        Int    @map("updated_log_index")
+
+  @@id([characterId, operator])
+  @@unique([characterId, operator], name: "character_operator_characterId_operator_unique")
+  @@index([characterId])
+  @@index([operator])
+  @@index([characterId, operator])
+  @@index([permissions])
+  @@index([createdAt(sort: Desc)])
+  @@index([updatedAt(sort: Desc)])
+  @@index([blockNumber(sort: Desc)])
+  @@index([updatedBlockNumber(sort: Desc)])
+  @@index([logIndex(sort: Desc)])
+  @@index([updatedLogIndex(sort: Desc)])
+  @@index([transactionHash])
+  @@index([updatedTransactionHash])
+  @@map("character_operator")
+}
