@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { NoteMetadata } from 'crossbell.js';
+import { NoteMetadata } from 'crossbell';
 import { SiweTransactionBaseService } from '../base/base.service';
 import { deepMerge } from '../base/util';
 
