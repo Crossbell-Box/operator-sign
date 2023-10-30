@@ -39,7 +39,7 @@ export class SiweLinkController {
   constructor(private readonly linkService: SiweLinkService) {}
 
   @Put(
-    '/siwe/contract/characters/:characterId/links/characters/:toCharacterIdOrToAddress/:linkType',
+    '/contract/characters/:characterId/links/characters/:toCharacterIdOrToAddress/:linkType',
   )
   @ApiOperation({ summary: 'Link a character' })
   async linkCharacter(
@@ -88,7 +88,7 @@ export class SiweLinkController {
     }
   }
 
-  @Put('/siwe/contract/characters/:characterId/links/characters')
+  @Put('/contract/characters/:characterId/links/characters')
   @ApiOperation({ summary: 'Link characters in batch' })
   async linkCharactersInBatch(
     @CurrentUser() user: CurrentOpSignUser,
@@ -115,7 +115,7 @@ export class SiweLinkController {
   }
 
   @Delete(
-    '/siwe/contract/characters/:characterId/links/characters/:toCharacterId/:linkType',
+    '/contract/characters/:characterId/links/characters/:toCharacterId/:linkType',
   )
   @ApiOperation({ summary: 'Unlink a character' })
   async unlinkCharacter(
@@ -139,7 +139,7 @@ export class SiweLinkController {
   }
 
   @Put(
-    '/siwe/contract/characters/:characterId/links/notes/:toCharacterId/:toNoteId/:linkType',
+    '/contract/characters/:characterId/links/notes/:toCharacterId/:toNoteId/:linkType',
   )
   @ApiOperation({ summary: 'Link a note' })
   async linkNote(
@@ -167,7 +167,7 @@ export class SiweLinkController {
   }
 
   @Delete(
-    '/siwe/contract/characters/:characterId/links/notes/:toCharacterId/:toNoteId/:linkType',
+    '/contract/characters/:characterId/links/notes/:toCharacterId/:toNoteId/:linkType',
   )
   @ApiOperation({ summary: 'Unlink a note' })
   async unlinkNote(

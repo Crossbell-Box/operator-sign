@@ -25,7 +25,7 @@ import { Throttle, minutes } from '@nestjs/throttler';
 export class SiweController {
   constructor(private siweService: SiweService) {}
 
-  @Post('/siwe/challenge')
+  @Post('/challenge')
   @ApiOperation({ summary: 'Generate a challenge' })
   async genNonce(
     @Body() body: SiweChallengeBody,
@@ -41,7 +41,7 @@ export class SiweController {
   }
 
   @Throttle({ default: { ttl: minutes(5), limit: 5 } }) // 5 requests per 5 minutes
-  @Post('/siwe/login')
+  @Post('/login')
   @ApiOperation({ summary: 'Login' })
   async login(@Body() body: SiweLoginBody): Promise<{ token: string }> {
     const { address, signature } = body;
@@ -49,7 +49,7 @@ export class SiweController {
     return { token };
   }
 
-  @Get('/siwe/account')
+  @Get('/account')
   @ApiOperation({ summary: 'Get the current user' })
   @ApiBearerAuthSiwe()
   @UseGuards(SiweAuthGuard)
@@ -60,7 +60,7 @@ export class SiweController {
   }
 
   private demoHtmlCache?: string;
-  @Get('/siwe/demo')
+  @Get('/demo')
   @ApiOperation({ summary: 'Demo App' })
   async demo(@Response() res: FastifyReply) {
     let demoHtml: string;

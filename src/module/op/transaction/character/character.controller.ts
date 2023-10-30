@@ -17,7 +17,7 @@ import { CurrentOpSignUser } from '../../siwe/siwe.type';
 export class SiweCharacterController {
   constructor(private readonly characterService: SiweCharacterService) {}
 
-  @Post('/siwe/contract/characters/:characterId/metadata')
+  @Post('/contract/characters/:characterId/metadata')
   @ApiOperation({ summary: 'Set metadata for character' })
   async setCharacterMetadata(
     @Param() param: CharacterIdParam,

@@ -16,7 +16,7 @@ import { CurrentOpSignUser } from '../../siwe/siwe.type';
 export class SiweCsbController {
   constructor(private readonly csbService: SiweCsbService) {}
 
-  @Get('/siwe/account/balance')
+  @Get('/account/balance')
   @ApiOperation({ summary: 'Get the balance of csb' })
   async getCsbBalance(
     @CurrentUser() user: CurrentOpSignUser,

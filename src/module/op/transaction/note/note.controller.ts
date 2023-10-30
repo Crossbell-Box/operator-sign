@@ -36,7 +36,7 @@ import { CurrentOpSignUser } from '../../siwe/siwe.type';
 export class SiweNoteController {
   constructor(private readonly noteService: SiweNoteService) {}
 
-  @Put('/siwe/contract/characters/:characterId/notes')
+  @Put('/contract/characters/:characterId/notes')
   @ApiOperation({ summary: 'Post a new note' })
   async postNote(
     @CurrentUser() user: CurrentOpSignUser,
@@ -98,7 +98,7 @@ export class SiweNoteController {
     }
   }
 
-  @Post('/siwe/contract/characters/:characterId/notes/:noteId/metadata')
+  @Post('/contract/characters/:characterId/notes/:noteId/metadata')
   @ApiOperation({ summary: 'Set a new metadata for a note' })
   async setNoteMetadata(
     @CurrentUser() user: CurrentOpSignUser,
@@ -130,7 +130,7 @@ export class SiweNoteController {
     };
   }
 
-  @Post('/siwe/contract/characters/:characterId/notes/:noteId/lock')
+  @Post('/contract/characters/:characterId/notes/:noteId/lock')
   @ApiOperation({ summary: 'Lock a note' })
   async lockNote(
     @CurrentUser() user: CurrentOpSignUser,
@@ -147,7 +147,7 @@ export class SiweNoteController {
     };
   }
 
-  @Delete('/siwe/contract/characters/:characterId/notes/:noteId')
+  @Delete('/contract/characters/:characterId/notes/:noteId')
   @ApiOperation({ summary: 'Delete a note' })
   async deleteNote(
     @CurrentUser() user: CurrentOpSignUser,
@@ -164,7 +164,7 @@ export class SiweNoteController {
     };
   }
 
-  @Put('/siwe/contract/characters/:characterId/notes/:noteId/minted')
+  @Put('/contract/characters/:characterId/notes/:noteId/minted')
   @ApiOperation({ summary: 'Mint a note' })
   async mintNote(
     @CurrentUser() user: CurrentOpSignUser,
