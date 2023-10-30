@@ -11,7 +11,7 @@ import Redis from 'ioredis';
 import { setTimeout } from 'timers/promises';
 import retry from 'async-retry';
 import { publicClient } from '@/utils/public-client';
-import { WatchEventParameters } from 'viem';
+import { isAddress, isAddressEqual, WatchEventParameters } from 'viem';
 import { AbiEvent } from 'abitype';
 
 @Injectable()
@@ -73,18 +73,19 @@ export class SiweTransactionBaseService implements OnApplicationShutdown {
    * @throws WebException if the character does not authorize the op signer as operator
    */
   private async checkOperator(characterId: number): Promise<void> {
-    const op = await this.prisma.characterOperator.findUnique({
-      where: {
-        characterId_operator: {
-          characterId,
-          operator: OP_SIGN_OPERATOR_WALLET_ADDRESS,
-        },
-      },
-      select: {
-        characterId: true,
-      },
+    const list = await this.prisma.characterOperator.findMany({
+      where: { characterId },
+      select: { characterId: true, operator: true, permissions: true },
     });
-    if (!op) {
+
+    const operator = list.find(
+      ({ operator, permissions }) =>
+        isAddress(operator) &&
+        isAddressEqual(operator, OP_SIGN_OPERATOR_WALLET_ADDRESS) &&
+        permissions.length !== 0,
+    );
+
+    if (!operator) {
       throw new WebException(
         `You have not authorized the op signer (address: ${OP_SIGN_OPERATOR_WALLET_ADDRESS}) as an operator for this character (id: ${characterId})`,
       );
