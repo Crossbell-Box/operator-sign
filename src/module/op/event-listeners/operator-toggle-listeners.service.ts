@@ -31,10 +31,10 @@ export class OperatorToggleListenersService
       event: grantOperatorPermissions,
       onLogs: async (logs) => {
         for (const log of logs) {
-          const { characterId, permissionBitMap } = log.args;
+          const { characterId, permissionBitMap = 0n } = log.args;
           const operator = log.args.operator?.toLowerCase();
 
-          if (characterId && operator && permissionBitMap) {
+          if (characterId && operator) {
             const date = await getDateOfBlock(log.blockNumber);
             const permissions =
               this.contract.operator.convertUint256ToPermissionsForCharacter(
