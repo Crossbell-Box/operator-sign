@@ -31,7 +31,8 @@ export class OperatorToggleListenersService
       event: grantOperatorPermissions,
       onLogs: async (logs) => {
         for (const log of logs) {
-          const { characterId, operator, permissionBitMap } = log.args;
+          const { characterId, permissionBitMap } = log.args;
+          const operator = log.args.operator?.toLowerCase();
 
           if (characterId && operator && permissionBitMap) {
             const date = await getDateOfBlock(log.blockNumber);
