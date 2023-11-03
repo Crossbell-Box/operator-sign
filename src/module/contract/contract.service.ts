@@ -3,7 +3,7 @@ import { createContract, Contract } from 'crossbell';
 import { setJsonRpcAddress } from 'crossbell/network';
 import assert from 'assert';
 
-import { CBT_CONTRACT_ADDRESS } from '@/module/op/op.constants';
+import { CBT_CONTRACT_ADDRESS } from '@/utils/constants';
 
 export type ContractType = 'readonly' | 'operator-sign';
 

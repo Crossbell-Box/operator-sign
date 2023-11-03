@@ -7,7 +7,7 @@ import { isAddressEqual, isAddress, parseEther } from 'viem';
 import { indexer } from '@/utils/indexer';
 import { getAbiEvent } from '@/utils/get-abi-event';
 import { getDateOfBlock } from '@/utils/get-date-of-block';
-import { OP_SIGN_OPERATOR_WALLET_ADDRESS } from '@/module/op/op.constants';
+import { OP_SIGN_OPERATOR_WALLET_ADDRESS } from '@/utils/constants';
 
 import { EventListenersBaseService } from './base.service';
 

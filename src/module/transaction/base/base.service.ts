@@ -1,5 +1,5 @@
 import { CrossbellContractService } from '@/module/contract/contract.service';
-import { OP_SIGN_OPERATOR_WALLET_ADDRESS } from '@/module/op/op.constants';
+import { OP_SIGN_OPERATOR_WALLET_ADDRESS } from '@/utils/constants';
 import { CsbManagerService } from '@/module/csb-manager/csb-manager.service';
 import { PrismaService } from '@/module/prisma/prisma.service';
 import { WebException } from '@/utils/exception';
