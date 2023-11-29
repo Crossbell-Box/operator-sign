@@ -10,6 +10,7 @@ import { ThrottleModule } from './throttle/throttle.module';
 import { EventListenersModule } from './event-listeners/event-listeners.module';
 import { SiweModule } from './siwe/siwe.module';
 import { SiweTransactionModule } from './transaction/transaction.module';
+import { HttpModule } from './http/http.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SiweTransactionModule } from './transaction/transaction.module';
     SiweModule,
     SiweTransactionModule,
     EventListenersModule,
+    HttpModule,
   ],
 })
 export class AppModule {}
