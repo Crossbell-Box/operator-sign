@@ -34,19 +34,18 @@ export async function configure(
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('Crossbell Indexer API')
-      .setDescription('The API description of Crossbell Indexer')
+      .setTitle('Crossbell Operator Sign API')
+      .setDescription('The API description of Crossbell Operator Sign')
       .setVersion('1.0')
       .setContact('Crossbell', 'https://crossbell.io', 'contact@crossbell.io')
       // .setLicense('License: MIT', 'https://opensource.org/licenses/MIT')
       .setExternalDoc('Discord community', 'https://discord.gg/4GCwDsruyj')
       .setTermsOfService('https://legal.xlog.app/Terms-of-Service')
-      .addTag('Crossbell Indexer')
       .addBearerAuth({ type: 'http', name: 'siwe' }, 'siwe')
       .build(),
   );
   SwaggerModule.setup('docs', app, document, {
-    customSiteTitle: 'Crossbell Indexer Doc',
+    customSiteTitle: 'Crossbell Operator Sign Doc',
     customfavIcon: 'https://crossbell.io/favicon.ico',
   });
   logger.debug('loaded: SwaggerModule');
