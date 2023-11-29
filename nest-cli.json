@@ -22,11 +22,7 @@
     "assets": [
       {
         "watchAssets": true,
-        "include": "module/mailer/templates/**/*.html"
-      },
-      {
-        "watchAssets": true,
-        "include": "module/op/siwe/**/*.html"
+        "include": "module/**/*.html"
       }
     ]
   }
