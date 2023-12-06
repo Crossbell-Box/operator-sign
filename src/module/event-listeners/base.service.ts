@@ -8,6 +8,7 @@ import { CrossbellContractService } from '@/module/contract/contract.service';
 import { PrismaService } from '@/module/prisma/prisma.service';
 
 import { publicClient } from '@/utils/public-client';
+import { bigIntMin } from '@/utils/bigint';
 
 @Injectable()
 export class EventListenersBaseService implements OnApplicationShutdown {
@@ -86,7 +87,7 @@ export class EventListenersBaseService implements OnApplicationShutdown {
 
           await this.prisma.eventPoint.update({
             where: { eventName },
-            data: { blockNumber: Number(toBlock) },
+            data: { blockNumber: Number(bigIntMin(toBlock, latestBlock)) },
           });
 
           fromBlock = toBlock + 1n;
