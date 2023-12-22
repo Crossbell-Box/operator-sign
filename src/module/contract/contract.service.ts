@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createContract, Contract } from 'crossbell';
-import { setJsonRpcAddress } from 'crossbell/network';
 import assert from 'assert';
 
 import { CBT_CONTRACT_ADDRESS } from '@/utils/constants';
@@ -18,10 +17,10 @@ export class CrossbellContractService {
       return this.contracts[type];
     }
 
-    setJsonRpcAddress(process.env.RPC_ENDPOINT_HTTP!);
     const privateKey = this.getPrivateKey(type);
     const contract = createContract(privateKey, {
-      address: { cbtContract: CBT_CONTRACT_ADDRESS },
+      contractAddresses: { cbt: CBT_CONTRACT_ADDRESS },
+      rpcUrl: process.env.RPC_ENDPOINT_HTTP,
     });
 
     this.logger.debug(`Connected wallet (${type}) to Crossbell!`);
